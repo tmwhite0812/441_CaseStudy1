@@ -8,7 +8,7 @@ alpha = [.4, .3, .5]; % Reinfection rates
 r = .2;                % Constant recovery rate
 time_length = [0 100];
 
-% Initial conditions
+% intial conditions 
 ic = [0.9, 0.1];  % x1 = 90% susceptible, x2 = 10% infected
 
 for i = 1:3
@@ -56,11 +56,11 @@ for i = 1:3
     x_linear(:, 1) = x_linear(:, 1) + xeq1;
     x_linear(:, 2) = x_linear(:, 2) + xeq2;
     
-    % Create a new figure for each case
+    % new figure for each simulation 
     figure;
-    plot(t, x(:, 1), 'r', 'LineWidth', 1.5); % Nonlinear susceptible population
+    plot(t, x(:, 1), 'r', 'LineWidth', 1.5); % Nonlinear susceptible 
     hold on;
-    plot(t, x(:, 2), 'b', 'LineWidth', 1.5); % Nonlinear infected population
+    plot(t, x(:, 2), 'b', 'LineWidth', 1.5); % Nonlinear infected 
     plot(t_linear, x_linear(:, 1), 'r:', 'LineWidth', 1.5); % Linearized susceptible 
     plot(t_linear, x_linear(:, 2), 'b:', 'LineWidth', 1.5); % Linearized infected 
     scatter(t(end), xeq1, 100, 'r', 'filled');  
