@@ -6,12 +6,12 @@ K1 = [.3, .7];        % Saturation constants for infection
 K2 = .5;              % Saturation constant for recovery
 alpha = [.25, .50];   % Reinfection rates
 r = 0.2;              % Constant recovery rate
-weeks = [0 100];      % Time span
+weeks = [0 100];      % time span
 
-% Define the B matrix for controllability
-B = [1 0; 0 1];  % Simple B matrix that allows direct control of both states
+% B matrix for contrallability for controlling both states
+B = [1 0; 0 1];
 
-%% Desired Equilibrium Point (for disease eradication)
+%% desired Equilibrium Point (for disease eradication)
 desired_x1_eq = 0.7;  % Example target for susceptible population
 desired_x2_eq = 0.0;  % Desired equilibrium for infected population
 
