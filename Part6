@@ -10,13 +10,13 @@ r = 0.2;                   % Constant recovery rate across all regions
 weeks = [0 100];            % Simulation period in weeks
 
 % Interaction matrices (movement between regions)
-C = [0, 0.1, 0.05;  % Susceptible interaction matrix
-     0.1, 0, 0.05;
-     0.05, 0.05, 0];
+C = [0, 10, 10;  % Susceptible interaction matrix
+     0, 0, 10;
+     0, 0, 0];
 
-D = [0, 0.2, 0.1;   % Infected interaction matrix
-     0.2, 0, 0.1;
-     0.1, 0.1, 0];
+D = [0, 10, 8;   % Infected interaction matrix
+     0, 0, 12;
+     0, 0, 0];
 
 % Define the B matrix for controllability
 B = [1 0; 0 1];  % Allows direct control of both states
