@@ -21,32 +21,31 @@ for i = 1:length(V1)
 
                 % grouping by parameter setting 
                 figure;
-
-                % Group plots with a shared title using `sgtitle`
                 sgtitle(sprintf('V1 = %.2f, K1 = %.2f, K2 = %.2f, \\alpha = %.2f, r = %.2f', ...
                         V1(i), K1(k), K2, alpha(a), recovery(r)));
 
-                % showcasing the effects 
+                % simulation of the parameters
                 for j = 1:size(ics, 1)  
 
-                    % Extract the initial condition for the current iteration
+                    % iterating through the initial conditions  
                     ic = ics(j, :); 
 
-                    % Solve the differential equation using ode45
+                    % solving the differential equation 
                     [t, x] = ode45(@(t, x) epidemic_model(t, x, V1(i), K1(k), ...
                                       recovery(r), K2, alpha(a)), weeks, ic);
 
-                    % extract the last value of the eq point 
+                    % extract the last value of the eq point to compute jacobian
+                    % and linearize around the eq point 
                     xeq1 = x(end, 1);  
                     xeq2 = x(end, 2);  % will always be 0 
 
-                    % Compute the Jacobian and eigenvalues
+                    % jacobian and eig value computation
                     J = [0, -V1(i) * xeq1 / K1(k) + alpha(a);
                          0,  V1(i) * xeq1 / K1(k) - recovery(r) / K2 - alpha(a)];
                     eigenvalues = eig(J);
-                    lambda_2 = eigenvalues(2);  % Use second eigenvalue for stability % first is 0
+                    lambda_2 = eigenvalues(2);  % using second eigenvalue for stability.. first is 0
 
-                    % Determine stability
+                    % stability check 
                     if lambda_2 < 0
                         stability = 'Stable';
                     elseif lambda_2 > 0
@@ -55,22 +54,19 @@ for i = 1:length(V1)
                         stability = 'Neutrally Stable';
                     end
 
-                    % Linearization of the system use same jacobian as
-                    % before
-                    A = J;  % Jacobian as the linearization matrix
-                    linear_ic = [ic(1) - xeq1, ic(2) - xeq2];  % Linearized initial conditions
+                    % linearzation of the system using same jacobian mtrx
+                    A = J; 
+                    linear_ic = [ic(1) - xeq1, ic(2) - xeq2]; 
                     [t_linear, delta_x] = ode45(@(t, x) linearized_model(t, x, A), weeks, linear_ic);
 
                     % interpolate to match original time points
                     x_linear_interp = interp1(t_linear, delta_x, t);
                     x_linear = zeros(length(t), 2);
-                    x_linear(:, 1) = x_linear_interp(:, 1) + xeq1;  % Add equilibrium back
+                    x_linear(:, 1) = x_linear_interp(:, 1) + xeq1;  % x + delta x 
                     x_linear(:, 2) = x_linear_interp(:, 2) + xeq2;
 
-                    % Create a subplot for each initial condition
+                    % matching based on the initial conditions 
                     subplot(size(ics, 1), 1, j); 
-
-                    % Plot the results
                     plot(t, x(:, 1), 'r', 'LineWidth', 1.5);   
                     hold on;
                     plot(t, x(:, 2), 'b', 'LineWidth', 1.5);   
