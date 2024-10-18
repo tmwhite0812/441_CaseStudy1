@@ -1,6 +1,5 @@
 %% ESE 441 Epidemic Model Case Study 
 % Keeler Tardiff and Tyler White 
-%% No inputs of u(t)
 V1 = [.20, .80];           % Infection rates
 K1 = [0.30, 0.70];         % Saturation constants for infection  
 K2 = 0.5;                  % Saturation constant for recovery 
