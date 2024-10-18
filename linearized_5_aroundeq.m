@@ -61,12 +61,12 @@ for i = 1:length(V1)  % Iterate over each parameter set
         plot(t, x(:, 2) * 100, 'b', 'LineWidth', 1.5);  % Nonlinear Infected
         plot(t, x_linear(:, 1) * 100, 'r--', 'LineWidth', 1.5);  % Linearized Susceptible
         plot(t, x_linear(:, 2) * 100, 'b--', 'LineWidth', 1.5);  % Linearized Infected
-        legend('x_1 (Nonlinear Susceptible)', 'x_2 (Nonlinear Infected)', ...
-               'x_1 (Linearized Susceptible)', 'x_2 (Linearized Infected)', ...
+        legend('x_1 (Linearized Susceptible)', 'x_2 (Linearized Infected)', ...
+               'x_1 (Desired Equilibrium)', 'x_2 (Desired Equilibrium)', ...
                'Location', 'best');
         xlabel('Weeks');
         ylabel('Population Percentage');
-        title(sprintf('Dynamics Comparison: V1 = %.1f, K1 = %.1f', V1(i), K1(i)));
+        title(sprintf('Initial Conditions: Susceptible = %.1f, Infected = %.1f', ic(1), ic(2)));
         ylim([0 100]);  % Fix the y-axis to range from 0 to 100
         grid on;
 
