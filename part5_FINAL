@@ -1,0 +1,98 @@
+% Keeler Tardiff and Tyler White
+
+V1 = [.2, .8];        % Infection rates
+K1 = [.4, .6];        % Saturation constants for infection
+K2 = .5;              % Saturation constant for recovery
+alpha = [.25, .50];   % Reinfection rates
+r = 0.2;              % Constant recovery rate
+weeks = [0 5];      % Time span
+
+
+B = [1 0; 0 1];  % Simple B matrix that allows direct control of both states
+
+%Desired equilibriums
+desired_x1_eq = 0.7;  
+desired_x2_eq = 0.0;  
+
+% Control gains (feedback gains for u = K^T * x)
+K = [-3, 0; 0, -5];  
+
+ics = [
+    0.90, 0.10;  % 90% susceptible, 10% infected
+    0.50, 0.50;  % 50% susceptible, 50% infected
+];
+
+
+for i = 1:length(V1)  %each parameter set
+    for j = 1:size(ics, 1)  %initial conditions
+        ic = ics(j, :);
+
+        % Check if initial conditions are valid
+        if abs(sum(ic) - 1) > 1e-3
+            error('Initial conditions must sum to 1.');
+        end
+
+        % Simulate Nonlinear Model with Feedback Control
+        [t, x] = ode45(@(t, x) epidemic_model_with_feedback(t, x, V1(i), K1(i), ...
+                              r, K2, alpha(i), K, desired_x1_eq, desired_x2_eq), weeks, ic);
+
+        % Extract eq points 
+        xeq1 = x(end, 1);  
+        xeq2 = x(end, 2);  
+
+        % Linearize around eq points
+        A = [0, -V1(i) * xeq1 / K1(i) + alpha(i);
+             0, V1(i) * xeq1 / K1(i) - r / K2 - alpha(i)];
+
+        % Simulate the Linearized Model around the equilibrium point
+        linear_ic = [0, 0];  
+        [t_linear, delta_x] = ode45(@(t, x) linearized_model(t, x, A, B, K), weeks, linear_ic);
+
+        % interpolation to assist in comparison between linearized vs
+        % non-linearized simulations
+        x_linear_interp = interp1(t_linear, delta_x, t);
+        x_linear = x_linear_interp + [xeq1, xeq2];  % Offset by equilibrium points
+
+        %plot
+        figure;
+        plot(t, x(:, 1) * 100, 'r', 'LineWidth', 1.5);  % Nonlinear Susceptible
+        hold on;
+        plot(t, x(:, 2) * 100, 'b', 'LineWidth', 1.5);  % Nonlinear Infected
+        plot(t, x_linear(:, 1) * 100, 'r--', 'LineWidth', 1.5);  % Linearized Susceptible
+        plot(t, x_linear(:, 2) * 100, 'b--', 'LineWidth', 1.5);  % Linearized Infected
+        legend('x_1 (Linearized Susceptible)', 'x_2 (Linearized Infected)', ...
+               'x_1 (Desired Equilibrium)', 'x_2 (Desired Equilibrium)', ...
+               'Location', 'best');
+        xlabel('Weeks');
+        ylabel('Population Percentage');
+        title(sprintf('Initial Conditions: Susceptible = %.1f, Infected = %.1f', ic(1), ic(2)));
+        ylim([0 100]);  % Fix the y-axis to range from 0 to 100
+        grid on;
+
+
+        fprintf('Simulation %d, Initial Condition %d: Equilibrium (x1, x2) = (%.4f, %.4f)\n', i, j, xeq1, xeq2);
+    end
+end
+
+%Linearized Model (expected eq)
+function dxdt = linearized_model(t, x, A, B, K)
+    u = K * x;  
+    dxdt = A * x + B * u;  
+end
+
+%Feedback Control
+function dxdt = epidemic_model_with_feedback(t, x, V1, K1, r, K2, alpha, K, x1_desired, x2_desired)
+    x1 = x(1);  
+    x2 = x(2);  
+    
+    % Feedback control: u = K^T * (x - desired_x)
+    u = K * (x - [x1_desired; x2_desired]);
+
+    u1 = u(1);  % Control input for susceptible equation
+    u2 = u(2);  % Control input for infected equation
+
+    dx1 = -V1 * x1 * x2 / (K1 + x2) + alpha * x2 + u1;
+    dx2 = V1 * x1 * x2 / (K1 + x2) - r * x2 / (x2 + K2) - alpha * x2 + u2;
+
+    dxdt = [dx1; dx2];
+end
